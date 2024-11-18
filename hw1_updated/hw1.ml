@@ -16,6 +16,7 @@ type Num=
 |Integer of int
 |Float of float;;
 |Real of float;;
+khv
 
 type binop = Add | Sub | Mul | Div | Mod | Pow | AddPer | SubPer | PerOf;;
 
