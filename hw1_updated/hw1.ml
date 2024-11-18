@@ -11,7 +11,7 @@
 #use "pc.ml";;
 
 type frac={numerator:int;denominator:int};;
-
+int try;;
 type Num=
 |Integer of int
 |Float of float;;
