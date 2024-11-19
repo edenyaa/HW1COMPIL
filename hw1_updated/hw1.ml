@@ -10,6 +10,7 @@
 
 #use "pc.ml";;
 
+<<<<<<< HEAD
 type frac={numerator:int;denominator:int};;
 int try;;
 type Num=
@@ -17,6 +18,40 @@ type Num=
 |Float of float;;
 |Real of float;;
 khv
+=======
+
+let maybeify nt none_value = 
+  pack (maybe nt) (function
+            | None -> none_value
+            | Some x -> x);;
+
+let int_of_digit_char = 
+  let delta = int_of_char '0' in
+  function ch -> int_of_char ch - delta;;
+
+let nt_digit_0_9 = pack (range '0'-'9') int_of_digit_char;
+
+let spaces = star (char ' ');;
+
+let nt_optional_is_positive = 
+  let nt1 = pack (char '-') (lambda _ -> false) in
+  let nt2 = pack (char '+') (lambda _ -> false) in
+  let nt1 = maybeify (disj nt1 nt2) true in
+  nt1;;
+
+let Num = 
+  let  nt1 = pack (plus nt_digit_0_9)
+              (function digits ->
+                list.fold_left
+                (function number digit -> 10 * number +digit)
+                0
+                digits) in
+  let nt1 = caten nt_optional_is_positive nt1 in
+  let nt1 = pack nt1 (function (is_positive, n) ->
+    if is_positive then n else (-n))in
+  nt1;;
+              
+>>>>>>> c1e17ca (added numbers)
 
 type binop = Add | Sub | Mul | Div | Mod | Pow | AddPer | SubPer | PerOf;;
 
@@ -36,7 +71,7 @@ end;; (* module type INFIX_PARSER *)
 module InfixParser : INFIX_PARSER = struct
 open PC;;
 
-let rec nt_expr str= nt_expr_0 str
+(*let rec nt_expr str= nt_expr_0 str
 and nt_expr_0 str=
 let n1 = pack (char '+') (fun _ -> Add) in
 let n2 = pack (char '-') (fun _ -> Sub) in
@@ -57,7 +92,7 @@ let nt2 = make_nt_spaced_out (char ch_right) in
 let nt1= caten nt1 (caten nt nt2) in
 let nt1= pack nt1 (fun (_, (e, _)) -> e) in
 nt1;;
-
+*)
 
 
 
