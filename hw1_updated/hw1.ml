@@ -10,13 +10,10 @@
 
  #use "pc.ml";;
 
-
  type frac={numerator:int;denominator:int};;
- int try;;
  type Num=
- |Integer of int
- |Float of float;;
- |Real of float;;
+ |Integer of int;;
+
 
  
  let maybeify nt none_value = 
@@ -69,7 +66,7 @@ let nt_whitespace = const (fun ch -> ch <= ' ');;
 
 let nt_var =
     let nt1=  range_ci 'a' 'z' in  
-    let nt2=range_ci '0' '9' in 
+    let nt2 = disj_list [range_ci 'a' 'z'; range_ci '0' '9'; char '_'; char '$'] in 
     let nt1=caten nt1 (star (disj nt1 nt2)) in
     let nt1=pack nt1 (fun (ch1, chs)->string_of_list(ch1::chs)) in
     let nt1=pack nt1 (fun name->Var name) in
@@ -93,7 +90,8 @@ and nt_expr_0 str=
 and nt_expr_1 str= 
     let nt1= pack(char '*')(fun _->Mul) in
     let nt2= pack(char '/')(fun _->Div) in
-    let nt1=disj nt1 nt2 in
+    let nt3= pack(char '%')(fun _->Mod) in
+    let nt1=disj (disj nt1 nt2) nt3 in
     let nt1=star(caten nt1 nt_expr_2) in
     let nt1=pack(caten nt_expr_2 nt1)
     (fun (expr2, binop_expr2s)->
@@ -103,7 +101,22 @@ and nt_expr_1 str=
        binop_expr2s) in
     let nt1=make_nt_spaced_out nt1 in
     nt1 str        
+    
+(*pow*)    
 and nt_expr_2 str=
+  let nt1= pack(char '^')(fun _->Pow) in
+  let nt1=star(caten nt1 nt_expr_3) in
+  let nt1=pack(caten nt_expr_3 nt1)
+  (fun (expr3, binop_expr3s)->
+    List.fold_right 
+    (fun expr3 (binop, expr3')-> Bin(binop, expr3, expr3'))
+     expr3
+     binop_expr3s) in
+  let nt1=make_nt_spaced_out nt1 in
+  nt1 str
+
+
+and nt_expr_3 str=
   let nt1=disj_list[ pack nt_number (fun num->Num num) ;
                nt_var;
                 nt_paren] in
@@ -133,36 +146,6 @@ and nt_expr_2 str=
  module InfixParser : INFIX_PARSER = struct
  open PC;;
  
- 
- 
- 
- 
- 
- 
-   (* let nt_plus = char '+' in
-   let nt_minus = char '-' in
-   let nt_times = char '*' in
-   let nt_div = char '/' in
-   let nt_mod = char '%' in
-   let nt_pow = char '^' in
-   let nt_addper = caten nt_plus (char '%') in
-   let nt_subper = caten nt_minus (char '%') in
-   let nt_perof = caten (char '%') (char 'o') in
-   let nt_space = pack (char ' ') (fun _ -> "") in
-   let nt_integer = pack (plus (range '0' '9')) (fun digits -> Integer (int_of_string (list_to_string digits))) in
-   let nt_float = pack (caten (plus (range '0' '9')) (caten (char '.') (plus (range '0' '9')))) (fun (left, (_, right)) -> Float (float_of_string ((list_to_string left) ^ "." ^ (list_to_string right)))) in
-   let nt_real = pack (caten (plus (range '0' '9')) (caten (char '.') (plus (range '0' '9')))) (fun (left, (_, right)) -> Real (float_of_string ((list_to_string left) ^ "." ^ (list_to_string right)))) in
-   let nt_num = disj nt_float nt_integer in
-   let nt_num_or_var = disj nt_num nt_var in
-   let nt_expr = pack (caten nt_num_or_var (caten (disj nt_plus nt_minus) nt_num_or_var)) (fun (left, (op, right)) -> match op with
-     | '+' -> BinOp (Add, left, right)
-     | '-' -> BinOp (Sub, left, right)
-     | '*' -> BinOp (Mul, left, right)
-     | '/' -> BinOp (Div, left, right)
-     | '%' -> BinOp (Mod, left, right)
-     | '^' -> BinOp (Pow, left, right)
-     | _ -> raise X_no_match) in
-   nt_expr;; *)
    
  
  end;; (* module InfixParser *)
