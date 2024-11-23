@@ -97,7 +97,8 @@ let rec nt_expr str= nt_expr_0 str
   and nt_expr_1 str= 
         let nt1= pack(char '*')(fun _->Mul) in
         let nt2= pack(char '/')(fun _->Div) in
-        let nt1=disj nt1 nt2 in
+        let nt3= pack(word "mod")(fun _->Mod) in
+        let nt1=disj (disj nt1 nt2) nt3 in
         let nt1=star(caten nt1 nt_expr_2) in
         let nt1=pack(caten nt_expr_2 nt1)
         (fun (expr2, binop_expr2s)->
