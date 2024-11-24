@@ -10,15 +10,6 @@
 
 #use "pc.ml";;
 
-<<<<<<< HEAD
-type frac={numerator:int;denominator:int};;
-int try;;
-type Num=
-|Integer of int
-|Float of float;;
-|Real of float;;
-khv
-=======
 
 let maybeify nt none_value = 
   pack (maybe nt) (function
@@ -51,7 +42,7 @@ let Num =
     if is_positive then n else (-n))in
   nt1;;
               
->>>>>>> c1e17ca (added numbers)
+#added numbers
 
 type binop = Add | Sub | Mul | Div | Mod | Pow | AddPer | SubPer | PerOf;;
 
