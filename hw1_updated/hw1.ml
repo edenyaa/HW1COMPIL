@@ -33,13 +33,18 @@ end;; (* module type INFIX_PARSER *)
 module InfixParser : INFIX_PARSER = struct
 open PC;;
 
- 
-
- 
 let nt_whitespace = const (fun ch -> ch <= ' ');; 
 let make_nt_spaced_out nt= 
   let nt1=star nt_whitespace in
   let nt2=pack (caten nt1(caten nt nt1))(fun (_, (e, _))->e) in
+  nt2;;
+  
+
+let make_nt_paren ch_left ch_right nt=
+  let nt1 = make_nt_spaced_out (char ch_left) in
+  let nt2 = make_nt_spaced_out (char ch_right) in
+  let nt1= caten nt1 (caten nt nt2) in
+  let nt1= pack nt1 (fun (_, (e, _)) -> e) in
   nt1;;
 
 let maybeify nt none_value = 
@@ -91,14 +96,15 @@ let rec nt_expr str= nt_expr_0 str
           List.fold_left 
           (fun expr1 (binop, expr1')->
             BinOp (binop, expr1, expr1'))
-          expr1, binop_expr1s) in
+          expr1 binop_expr1s) in
         let nt1=make_nt_spaced_out nt1 in
         nt1 str  
   and nt_expr_1 str= 
         let nt1= pack(char '*')(fun _->Mul) in
         let nt2= pack(char '/')(fun _->Div) in
         let nt3= pack(word "mod")(fun _->Mod) in
-        let nt1=disj (disj nt1 nt2) nt3 in
+        let nt2=disj nt2 nt3 in
+        let nt1=disj nt1 nt2 in
         let nt1=star(caten nt1 nt_expr_2) in
         let nt1=pack(caten nt_expr_2 nt1)
         (fun (expr2, binop_expr2s)->
@@ -109,19 +115,40 @@ let rec nt_expr str= nt_expr_0 str
         let nt1=make_nt_spaced_out nt1 in
         nt1 str        
         
-    (*pow*)    
+    (*pow*)   
+  (*and nt_expr_2 str=
+    let nt1= pack (char '^') (fun _->Pow) in
+    let nt1=star(caten nt1 nt_expr_3) in
+    let nt1=pack(caten nt_expr_3 nt1)
+    (fun (expr3, binop_expr3s)->
+      List.fold_right 
+      (fun  (binop, expr3') acc -> BinOp (binop, acc, expr3'))
+      binop_expr3s
+      expr3) in
+    let nt1=make_nt_spaced_out nt1 in
+    nt1 str*)
+    (*and nt_expr_2 str =
+      let nt1 = pack (char '^') (fun _ -> Pow) in
+      let nt1 = star (caten nt1 nt_expr_3) in
+      let nt1 = pack (caten nt_expr_3 nt1)
+      (fun (expr3, binop_expr3s) ->
+        List.fold_left
+          (fun acc (binop, expr3') -> BinOp (binop,  expr3', acc))
+          expr3
+           binop_expr3s) in
+      let nt1 = make_nt_spaced_out nt1 in
+      nt1 str*)
   and nt_expr_2 str=
-      let nt1= pack(char '^')(fun _->Pow) in
-      let nt1=star(caten nt1 nt_expr_3) in
-      let nt1=pack(caten nt_expr_3 nt1)
-      (fun (expr3, binop_expr3s)->
-        List.fold_right 
-        (fun expr3 (binop, expr3')-> BinOp (binop, expr3, expr3'))
-         expr3
-         binop_expr3s) in
-      let nt1=make_nt_spaced_out nt1 in
-      nt1 str
-    
+    let nt1= pack (char '^') (fun _->Pow) in
+    let nt1=star(caten nt1 nt_expr_3) in
+    let nt1=pack(caten nt_expr_3 nt1)
+    (fun (expr3, binop_expr3s)->
+      List.fold_right 
+      (fun  (binop, expr3') acc -> BinOp (binop, expr3', acc))
+      binop_expr3s
+      expr3) in
+    let nt1=make_nt_spaced_out nt1 in
+    nt1 str
     
   and nt_expr_3 str=
       let nt1=disj_list[ pack nt_number (fun num->Num num) ;
@@ -134,16 +161,9 @@ let rec nt_expr str= nt_expr_0 str
   and nt_paren str=
            disj_list [make_nt_paren '(' ')' nt_expr;
                               make_nt_paren '[' ']' nt_expr;
-                              make_nt_paren '{' '}' nt_expr] 
-                              str
+                              make_nt_paren '{' '}' nt_expr] str
                             ;;
      
-     let make_nt_paren ch_left ch_right nt=
-     let nt1 = make_nt_spaced_out (char ch_left) in
-     let nt2 = make_nt_spaced_out (char ch_right) in
-     let nt1= caten nt1 (caten nt nt2) in
-     let nt1= pack nt1 (fun (_, (e, _)) -> e) in
-     nt1;;
          
  end;; (* module InfixParser *)
  
