@@ -116,39 +116,20 @@ let rec nt_expr str= nt_expr_0 str
         nt1 str        
         
     (*pow*)   
-  (*and nt_expr_2 str=
-    let nt1= pack (char '^') (fun _->Pow) in
-    let nt1=star(caten nt1 nt_expr_3) in
-    let nt1=pack(caten nt_expr_3 nt1)
-    (fun (expr3, binop_expr3s)->
-      List.fold_right 
-      (fun  (binop, expr3') acc -> BinOp (binop, acc, expr3'))
-      binop_expr3s
-      expr3) in
-    let nt1=make_nt_spaced_out nt1 in
-    nt1 str*)
-    (*and nt_expr_2 str =
-      let nt1 = pack (char '^') (fun _ -> Pow) in
-      let nt1 = star (caten nt1 nt_expr_3) in
-      let nt1 = pack (caten nt_expr_3 nt1)
-      (fun (expr3, binop_expr3s) ->
-        List.fold_left
-          (fun acc (binop, expr3') -> BinOp (binop,  expr3', acc))
-          expr3
-           binop_expr3s) in
-      let nt1 = make_nt_spaced_out nt1 in
-      nt1 str*)
-  and nt_expr_2 str=
-    let nt1= pack (char '^') (fun _->Pow) in
-    let nt1=star(caten nt1 nt_expr_3) in
-    let nt1=pack(caten nt_expr_3 nt1)
-    (fun (expr3, binop_expr3s)->
-      List.fold_right 
-      (fun  (binop, expr3') acc -> BinOp (binop, expr3', acc))
-      binop_expr3s
-      expr3) in
-    let nt1=make_nt_spaced_out nt1 in
+ and nt_expr_2 str =
+    let nt1 = pack (char '^') (fun _ -> Pow) in
+    let nt1 = star (caten nt_expr_3 nt1 ) in
+    let nt1 = pack (caten nt1 nt_expr_3 )
+      (fun (binop_exprs, last_expr) ->
+        List.fold_right
+          (fun (expr ,binop ) acc -> BinOp (binop, expr,acc))
+          binop_exprs
+         last_expr) in
+    let nt1 = make_nt_spaced_out nt1 in
+    let nt1=disj nt1 nt_expr_3 in
     nt1 str
+
+      
     
   and nt_expr_3 str=
       let nt1=disj_list[ pack nt_number (fun num->Num num) ;
