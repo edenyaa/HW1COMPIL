@@ -129,19 +129,38 @@ let rec nt_expr str= nt_expr_0 str
     let nt1=disj nt1 nt_expr_3 in
     nt1 str
 
-  (*Deref*)
-and nt_expr_3 str=
+  (*CALL*)
+  and nt_expr_3 str=
+    let nt1=make_nt_paren '(' ')' (pack(caten nt_expr
+    (star(make_nt_spaced_out(caten(char ',')
+    nt_expr))))
+    (fun (expr1,lis)-> expr1::List.map snd lis)) in
+    (*this i took from stackoverfloow to handle empty f*)
+    let nt1=disj nt1 (make_nt_paren '(' ')' (pack nt_epsilon (fun _ -> []))) in
+    let nt1=star nt1 in
+    let nt2 =pack (caten nt_expr_4 nt1)(fun (expr1, list) ->
+      List.fold_left
+       (fun expr1 args -> Call (expr1, args)) 
+       expr1 
+       list) in 
+    let nt1 = disj nt2 nt_expr_4 in
+    let nt1=make_nt_spaced_out nt1 in
+    nt1 str
+  
+and nt_expr_4 str=
 let nt1=star (make_nt_paren '[' ']' nt_expr) in
-let nt2 =pack (caten nt_expr_4 nt1)
+let nt2 =pack (caten nt_expr_5 nt1)
     (fun (binop_exprs, indexl) ->
       List.fold_left
        (fun expr1 index -> Deref (expr1, index)) 
        binop_exprs 
        indexl) in
-let nt1 = disj nt2 nt_expr_4 in
+let nt1 = disj nt2 nt_expr_5 in
+let nt1=make_nt_spaced_out nt1 in
 nt1 str
 
- and nt_expr_4 str=
+(*PAREN /NEG/OPPOSITE*)
+ and nt_expr_5 str=
       let nt1=disj_list[ pack nt_number (fun num->Num num) ;
                    nt_var;
                     nt_paren] in
