@@ -129,9 +129,19 @@ let rec nt_expr str= nt_expr_0 str
     let nt1=disj nt1 nt_expr_3 in
     nt1 str
 
-      
-    
-  and nt_expr_3 str=
+  (*Deref*)
+and nt_expr_3 str=
+let nt1=star (make_nt_paren '[' ']' nt_expr) in
+let nt2 =pack (caten nt_expr_4 nt1)
+    (fun (binop_exprs, indexl) ->
+      List.fold_left
+       (fun expr1 index -> Deref (expr1, index)) 
+       binop_exprs 
+       indexl) in
+let nt1 = disj nt2 nt_expr_4 in
+nt1 str
+
+ and nt_expr_4 str=
       let nt1=disj_list[ pack nt_number (fun num->Num num) ;
                    nt_var;
                     nt_paren] in
