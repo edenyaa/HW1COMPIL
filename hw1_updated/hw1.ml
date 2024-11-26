@@ -158,9 +158,30 @@ let nt2 =pack (caten nt_expr_5 nt1)
 let nt1 = disj nt2 nt_expr_5 in
 let nt1=make_nt_spaced_out nt1 in
 nt1 str
+and nt_expr_5 str =
+  let nt1=pack(
+     make_nt_paren '(' ')' (pack(caten nt_expr
+      (star(make_nt_spaced_out(caten(char ',')
+        nt_expr))))
+        (*this logic i took from web to handle call and deref together*)
+        (fun (expr1,lis)-> expr1::List.map snd lis))) 
+        (fun args -> fun expr -> Call (expr, args)) in
+  let nt2 =pack
+            (make_nt_paren '[' ']' nt_expr)
+            (fun index -> fun expr -> Deref (expr, index)) in
+  let nt3 = star (disj nt1 nt2) in
+  let nt1 = pack (caten nt_expr_6 nt3)
+                 (fun (expr1, binops) ->
+                   List.fold_left 
+                   (fun acc binop -> binop acc) 
+                   expr1
+                    binops) in
+        let nt1 = disj nt1 nt_expr_6 in
+        let nt1=make_nt_spaced_out nt1 in
+         nt1 str      
 
 (*PAREN /NEG/OPPOSITE*)
- and nt_expr_5 str=
+ and nt_expr_6 str=
       let nt1=disj_list[ pack nt_number (fun num->Num num) ;
                    nt_var;
                     nt_paren] in
@@ -168,15 +189,20 @@ nt1 str
       let nt1=disj nt1 nt_paren in
       let nt1=make_nt_spaced_out nt1 in
       nt1 str
+ and nt_paren str=
+      disj_list [make_nt_paren '(' ')' nt_expr;
+                         make_nt_paren '[' ']' nt_expr;
+                         make_nt_paren '{' '}' nt_expr] str
+                       ;;    
 
-      and nt_expr_6 str =
+(*and nt_expr_6 str =
        let nt_negation =
       pack (caten (make_nt_spaced_out (char '-')) nt_expr_2)
-      (fun (_, expr) -> BinOp (Sub, Num 0, expr)) in
-       let nt_paren_expr = make_nt_paren '(' ')' nt_expr in
+       (fun (_, expr) -> BinOp (Sub, Num 0, expr)) in
+      let nt_paren_expr = make_nt_paren '(' ')' nt_expr in
       let nt_atomic_expr =
       disj_list [nt_number; nt_var; nt_paren_expr] in
-      disj nt_negation nt_atomic_expr str
+      disj nt_negation nt_atomic_expr str*)
          
  end;; (* module InfixParser *)
  
