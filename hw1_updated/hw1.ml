@@ -71,7 +71,7 @@ let nt_var =
     let nt1=pack nt1 (fun name->Var name) in
     nt1;;
    
-let nt_number = 
+ let nt_number = 
     let  nt1 = pack (plus nt_digit_0_9)
                 (fun digits ->
                   List.fold_left
@@ -181,9 +181,21 @@ and nt_expr_5 str =
          nt1 str      
 
 (*PAREN /NEG/OPPOSITE*)
- and nt_expr_6 str=
+
+and nt_neg str=
+let nt1=pack (char '-') (fun _->Sub) in
+let nt1=pack(caten nt1 nt_expr)(fun (_, expr)->BinOp(Sub,Num 0, expr)) in
+nt1 str
+
+and nt_recp str=
+let nt1=pack (char '/') (fun _->Div) in
+let nt1=pack(caten nt1 nt_expr) (fun (_, expr)->BinOp(Div, Num 1, expr)) in
+nt1 str
+and nt_expr_6 str=
       let nt1=disj_list[ pack nt_number (fun num->Num num) ;
                    nt_var;
+                   nt_neg;
+                   nt_recp;
                     nt_paren] in
       let nt1=disj nt1 nt_var in
       let nt1=disj nt1 nt_paren in
@@ -193,17 +205,8 @@ and nt_expr_5 str =
       disj_list [make_nt_paren '(' ')' nt_expr;
                          make_nt_paren '[' ']' nt_expr;
                          make_nt_paren '{' '}' nt_expr] str
-                       ;;    
-
-(*and nt_expr_6 str =
-       let nt_negation =
-      pack (caten (make_nt_spaced_out (char '-')) nt_expr_2)
-       (fun (_, expr) -> BinOp (Sub, Num 0, expr)) in
-      let nt_paren_expr = make_nt_paren '(' ')' nt_expr in
-      let nt_atomic_expr =
-      disj_list [nt_number; nt_var; nt_paren_expr] in
-      disj nt_negation nt_atomic_expr str*)
-         
+                       ;;      
+                   
  end;; (* module InfixParser *)
  
  open InfixParser;;
