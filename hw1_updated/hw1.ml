@@ -168,12 +168,15 @@ nt1 str
       let nt1=disj nt1 nt_paren in
       let nt1=make_nt_spaced_out nt1 in
       nt1 str
-  and nt_paren str=
-           disj_list [make_nt_paren '(' ')' nt_expr;
-                              make_nt_paren '[' ']' nt_expr;
-                              make_nt_paren '{' '}' nt_expr] str
-                            ;;
-     
+
+      and nt_expr_6 str =
+       let nt_negation =
+      pack (caten (make_nt_spaced_out (char '-')) nt_expr_2)
+      (fun (_, expr) -> BinOp (Sub, Num 0, expr)) in
+       let nt_paren_expr = make_nt_paren '(' ')' nt_expr in
+      let nt_atomic_expr =
+      disj_list [nt_number; nt_var; nt_paren_expr] in
+      disj nt_negation nt_atomic_expr str
          
  end;; (* module InfixParser *)
  
