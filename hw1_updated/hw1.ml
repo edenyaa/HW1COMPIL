@@ -191,6 +191,16 @@ let rec nt_expr str= nt_expr_0 str
                               make_nt_paren '[' ']' nt_expr;
                               make_nt_paren '{' '}' nt_expr] str
                             ;;
+
+and nt_expr_5 str =
+  let nt_negation =
+    pack (caten (make_nt_spaced_out (char '-')) nt_expr_2)
+         (fun (_, expr) -> BinOp (Sub, Num 0, expr)) in
+  let nt_paren_expr = make_nt_paren '(' ')' nt_expr in
+  let nt_atomic_expr =
+    disj_list [nt_number; nt_var; nt_paren_expr] in
+  disj nt_negation nt_atomic_expr str
+
      
          
  end;; (* module InfixParser *)
