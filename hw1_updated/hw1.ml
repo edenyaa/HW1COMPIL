@@ -63,13 +63,14 @@ let nt_optional_is_positive =
     let nt1 = maybeify (disj nt1 nt2) true in
     nt1;;
 
-let nt_var =
-    let nt1=  range_ci 'a' 'z' in  
-    let nt2 = disj_list [range_ci 'a' 'z'; range_ci '0' '9'; char '_'; char '$'] in 
-    let nt1=caten nt1 (star (disj nt1 nt2)) in
-    let nt1=pack nt1 (fun (ch1, chs)->string_of_list(ch1::chs)) in
-    let nt1=pack nt1 (fun name->Var name) in
-    nt1;;
+    let nt_var =
+      let nt1=  range_ci 'a' 'z' in
+      let nt2 = disj_list [range_ci 'a' 'z'; range_ci '0' '9'; char '_'; char '$'] in 
+      let nt1 = caten nt1 (star nt2) in
+      let nt1 = pack nt1 (fun (ch1, chs)-> string_of_list(ch1::chs)) in
+      let nt1 = only_if nt1 (fun s -> String.lowercase_ascii s <> "mod") in
+      let nt1 = pack nt1 (fun name -> Var name) in
+      nt1;;
    
  let nt_number = 
     let  nt1 = pack (plus nt_digit_0_9)
@@ -82,7 +83,7 @@ let nt_var =
     let nt1 = pack nt1 (function (is_positive, n) ->
       if is_positive then n else (-n)) in
     nt1;;
-   
+    
     
 let rec nt_expr str= nt_expr_0 str
 
