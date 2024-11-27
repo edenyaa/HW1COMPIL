@@ -106,15 +106,43 @@ let rec nt_expr str= nt_expr_0 str
         let nt3= pack(word "mod")(fun _->Mod) in
         let nt2=disj nt2 nt3 in
         let nt1=disj nt1 nt2 in
-        let nt1=star(caten nt1 nt_expr_2) in
-        let nt1=pack(caten nt_expr_2 nt1)
+        let nt1=star(caten nt1 nt_mul_per) in
+        let nt1=pack(caten nt_mul_per nt1)
         (fun (expr2, binop_expr2s)->
           List.fold_left 
           (fun expr2 (binop, expr2')-> BinOp (binop, expr2, expr2'))
            expr2
            binop_expr2s) in
         let nt1=make_nt_spaced_out nt1 in
-        nt1 str        
+        nt1 str
+  
+  and nt_mul_per str =
+    let nt_mul = char '*' in
+    let nt_per = char '%' in
+    let nt1 = caten nt_add_sub_per nt_per in
+    let nt2= star(caten nt_mul nt1) in
+    let nt1 = pack(caten nt_add_sub_per nt2) (fun (expr1, mul_per_list) ->
+      List.fold_left
+        (fun acc (_, (expr2, _)) -> BinOp (PerOf, acc, expr2))
+        expr1
+        mul_per_list) in
+    let nt1 = make_nt_spaced_out nt1 in
+    nt1 str
+
+    and nt_add_sub_per str =
+      let nt_add = pack(char '+')(fun _-> AddPer) in
+      let nt_sub = pack(char '-')(fun _-> SubPer) in
+      let nt0 = disj nt_add nt_sub in
+      let nt_per = char '%' in
+      let nt1 = caten nt_expr_2 nt_per in
+      let nt2= star(caten nt0 nt1) in
+      let nt1 = pack(caten nt_expr_2 nt2) (fun (expr1, binop_per_list) ->
+        List.fold_left
+          (fun acc (binop, (expr2, _)) -> BinOp (binop, acc, expr2))
+          expr1
+          binop_per_list) in
+      let nt1 = make_nt_spaced_out nt1 in
+      nt1 str
         
     (*pow*)   
  and nt_expr_2 str =
