@@ -98,6 +98,7 @@ let rec nt_expr str= nt_expr_0 str
           (fun expr1 (binop, expr1')->
             BinOp (binop, expr1, expr1'))
           expr1 binop_expr1s) in
+          let nt1=disj nt1 nt_expr_1 in  
         let nt1=make_nt_spaced_out nt1 in
         nt1 str  
   and nt_expr_1 str= 
@@ -118,47 +119,34 @@ let rec nt_expr str= nt_expr_0 str
         nt1 str
   
   and nt_mul_per str =
-    let nt_mul = char '*' in
-    let nt_per = char '%' in
-    let nt1 = caten nt_add_per nt_per in
+    let nt_mul = make_nt_spaced_out (char '*') in
+    let nt_per = make_nt_spaced_out (char '%') in
+    let nt1 = caten nt_add_sub_per nt_per in
     let nt2= star(caten nt_mul nt1) in
-    let nt1 = pack(caten nt_add_per nt2) (fun (expr1, mul_per_list) ->
+    let nt1 = pack(caten nt_add_sub_per nt2) (fun (expr1, mul_per_list) ->
       List.fold_left
         (fun acc (_, (expr2, _)) -> BinOp (PerOf, acc, expr2))
         expr1
         mul_per_list) in
-    let nt1 = disj nt1 nt_add_per  in
+    let nt1 = disj nt1 nt_add_sub_per  in
     let nt1 = make_nt_spaced_out nt1 in
     nt1 str
 
-    and nt_add_per str =
-      let nt_mul = char '+' in
-      let nt_per = char '%' in
-      let nt1 = caten nt_sub_per nt_per in
-      let nt2= star(caten nt_mul nt1) in
-      let nt1 = pack(caten nt_sub_per nt2) (fun (expr1, mul_add_list) ->
+  and nt_add_sub_per str =
+      let nt1 = pack (make_nt_spaced_out (char '+')) (fun (_)-> AddPer) in
+      let nt1 = disj nt1 (pack (make_nt_spaced_out (char '-')) (fun (_)-> SubPer)) in
+      let nt_per = make_nt_spaced_out (char '%') in
+      let nt3=pack (caten nt_expr_2 nt_per) (fun (expr1, _)-> expr1) in
+      let nt2= star(caten nt1 nt3) in
+      let nt1 = pack(caten nt_expr_2 nt2) (fun (expr1, binop_list) ->
         List.fold_left
-          (fun acc (_, (expr2, _)) -> BinOp (AddPer, acc, expr2))
+          (fun acc (expr2,expr2') -> BinOp (expr2, acc, expr2'))
           expr1
-          mul_add_list) in
-      let nt1 = disj nt1 nt_sub_per  in    
+          binop_list) in
+      let nt1 = disj nt1 nt_expr_2  in    
       let nt1 = make_nt_spaced_out nt1 in
-      nt1 str
+      nt1 str  
 
-    and nt_sub_per str =
-      let nt_sub = pack(char '-')(fun _-> SubPer) in
-      let nt_per = char '%' in
-      let nt1 = caten nt_expr_2 nt_per in
-      let nt2= star(caten nt_sub nt1) in
-      let nt1 = pack(caten nt_expr_2 nt2) (fun (expr1, mul_sub_list) ->
-        List.fold_left
-          (fun acc (binop, (expr2, _)) -> BinOp (SubPer, acc, expr2))
-          expr1
-          mul_sub_list) in
-      let nt1 = disj nt1 nt_expr_2  in     
-      let nt1 = make_nt_spaced_out nt1 in
-      nt1 str
-        
     (*pow*)   
  and nt_expr_2 str =
     let nt1 = pack (char '^') (fun _ -> Pow) in
@@ -238,8 +226,8 @@ nt1 str
 and nt_expr_6 str=
       let nt1=disj_list[ pack nt_number (fun num->Num num) ;
                    nt_var;
-                   nt_neg;
                    nt_recp;
+                   nt_neg;
                     nt_paren] in
       let nt1=disj nt1 nt_var in
       let nt1=disj nt1 nt_paren in
@@ -249,7 +237,8 @@ and nt_expr_6 str=
       disj_list [make_nt_paren '(' ')' nt_expr;
                          make_nt_paren '[' ']' nt_expr;
                          make_nt_paren '{' '}' nt_expr] str
-                       ;;      
+                       ;;  
+                           
                    
  end;; (* module InfixParser *)
  
